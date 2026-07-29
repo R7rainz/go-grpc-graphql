@@ -11,7 +11,7 @@ import (
 )
 
 type AppConfig struct {
-	AccountURL string `envconfig:"ACCOUNT_SERVICE_URL"`
+	AccountURL string `envconfig:"ACCOUNT_SERVICE_URL" default:"localhost:58081"`
 	CatalogURL string `envconfig:"CATALOG_SERVICE_URL"`
 	OrderURL   string `envconfig:"ORDER_SERVICE_URL"`
 }

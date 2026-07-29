@@ -8,16 +8,23 @@ package graph
 import (
 	"context"
 	"errors"
+
+	accountclient "github.com/r7rainz/go-grpc-graphql/account/client"
 )
 
 // Orders is the resolver for the orders field.
 func (r *accountResolver) Orders(ctx context.Context, obj *Account) ([]*Order, error) {
-	return nil, errors.New("account orders resolver not implemented")
+	return []*Order{}, nil
 }
 
 // CreateAccount is the resolver for the createAccount field.
 func (r *mutationResolver) CreateAccount(ctx context.Context, account AccountInput) (*Account, error) {
-	return nil, errors.New("create account resolver not implemented")
+	createdAccount, err := r.accountClient.PostAccount(ctx, account.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	return accountFromClient(createdAccount), nil
 }
 
 // CreateProduct is the resolver for the createProduct field.
@@ -32,7 +39,42 @@ func (r *mutationResolver) CreateOrder(ctx context.Context, order OrderInput) (*
 
 // Accounts is the resolver for the accounts field.
 func (r *queryResolver) Accounts(ctx context.Context, pagination *PaginationInput, id *string) ([]*Account, error) {
-	return nil, errors.New("accounts resolver not implemented")
+	if id != nil {
+		account, err := r.accountClient.GetAccount(ctx, *id)
+		if err != nil {
+			return nil, err
+		}
+		if account == nil {
+			return []*Account{}, nil
+		}
+
+		return []*Account{accountFromClient(account)}, nil
+	}
+
+	skip, take := 0, 0
+	if pagination != nil {
+		if pagination.Skip != nil {
+			skip = *pagination.Skip
+		}
+		if pagination.Take != nil {
+			take = *pagination.Take
+		}
+	}
+
+	accounts, err := r.accountClient.GetAccounts(ctx, skip, take)
+	if err != nil {
+		return nil, err
+	}
+
+	graphAccounts := make([]*Account, 0, len(accounts))
+	for _, account := range accounts {
+		graphAccount := accountFromClient(account)
+		if graphAccount != nil {
+			graphAccounts = append(graphAccounts, graphAccount)
+		}
+	}
+
+	return graphAccounts, nil
 }
 
 // Products is the resolver for the products field.
@@ -54,3 +96,15 @@ type (
 	mutationResolver struct{ *Resolver }
 	queryResolver    struct{ *Resolver }
 )
+
+func accountFromClient(account *accountclient.Account) *Account {
+	if account == nil {
+		return nil
+	}
+
+	return &Account{
+		ID:     account.ID,
+		Name:   account.Name,
+		Orders: []Order{},
+	}
+}
