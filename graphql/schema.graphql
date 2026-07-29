@@ -1,0 +1,105 @@
+# Custom scalar for representing time/date values.
+scalar Time
+
+# OBJECT TYPES
+# type defines the data that the GraphQL server returns to the client.
+# Object types can reference other object types, making it easy to model
+# relationships (e.g., an Account has many Orders).
+#
+# Use `ID` for identifiers instead of `String` because it clearly indicates
+# the field represents a unique identifier.
+
+type Account {
+    id: ID!
+    name: String!
+
+    # One account can have many orders.
+    orders: [Order!]!
+}
+
+type Product {
+    id: ID!
+    name: String!
+    description: String!
+    price: Float!
+}
+
+type Order {
+    id: ID!
+
+    # Time when the order was created.
+    createdAt: Time!
+
+    totalPrice: Float!
+
+    # Snapshot of the purchased products.
+    products: [OrderedProduct!]!
+}
+
+# Represents a product inside an order.
+# This is intentionally different from Product because it stores the
+# purchased quantity and can preserve product details at the time of purchase.
+type OrderedProduct {
+    id: ID!
+    name: String!
+    description: String!
+    price: Float!
+    quantity: Int!
+}
+
+# INPUT TYPES
+# input defines the data that the client sends to the GraphQL server.
+#
+# Input types are commonly used for:
+# - Mutation arguments (create, update, delete)
+# - Complex query arguments (filters, pagination, sorting)
+#
+# Unlike object types, input types can only contain scalar values,
+# enums, or other input types. They cannot reference object types.
+
+# Used for pagination in queries.
+input PaginationInput {
+    skip: Int
+    take: Int
+}
+
+# Used when creating a new account.
+input AccountInput {
+    name: String!
+}
+
+# Used when creating a new product.
+input ProductInput {
+    name: String!
+    description: String!
+    price: Float!
+}
+
+# Represents a single product in an order request.
+# The client only needs to send the product ID and quantity.
+input OrderProductInput {
+    id: ID!
+    quantity: Int!
+}
+
+# Used when creating a new order.
+# The client sends the account ID and the list of products to purchase.
+input OrderInput {
+    accountId: ID!
+    products: [OrderProductInput!]!
+}
+
+type Mutation {
+    createAccount(account: AccountInput!): Account
+    createProduct(product: ProductInput!): Product
+    createOrder(order: OrderInput!): Order
+}
+
+type Query {
+    accounts(pagination: PaginationInput, id: String): [Account!]!
+    products(
+        pagination: PaginationInput
+        query: String
+        id: String
+    ): [Product!]!
+}
