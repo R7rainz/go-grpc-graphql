@@ -1,4 +1,4 @@
-package graphql
+package graph
 
 type Account struct {
 	ID     string  `json:"id"`

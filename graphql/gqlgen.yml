@@ -1,8 +1,22 @@
-schema: schema.graphql
+schema:
+  - graphql/internal/graph/schema.graphql
+
+exec:
+  filename: graphql/internal/graph/generated.go
+  package: graph
+
+model:
+  filename: graphql/internal/graph/models_gen.go
+  package: graph
+
+resolver:
+  layout: follow-schema
+  dir: graphql/internal/graph
+  package: graph
 
 models:
   Account:
-    model: github.com/r7rainz/go-grpc-graphql/graphql.Account
+    model: github.com/r7rainz/go-grpc-graphql/graphql/internal/graph.Account
     fields:
       orders:
         resolver: true
