@@ -23,7 +23,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	resolver, err := graphserver.NewResolver(cfg.AccountURL, cfg.CatalogURL, cfg.OrderURL)
+	resolver, err := graphserver.NewResolver(cfg.AccountURL)
 	if err != nil {
 		log.Fatal(err)
 	}
