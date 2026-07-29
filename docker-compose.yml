@@ -1,4 +1,20 @@
 services:
+  graphql:
+    image: golang:1.26-alpine
+    container_name: rainz_go_grpc_graphql_graphql
+    working_dir: /app
+    volumes:
+      - .:/app
+      - go_mod_cache:/go/pkg/mod
+      - go_build_cache:/root/.cache/go-build
+    environment:
+      ACCOUNT_SERVICE_URL: account:8081
+    ports:
+      - "58080:8080"
+    depends_on:
+      - account
+    command: ["go", "run", "./graphql/cmd/server"]
+
   account:
     image: golang:1.26-alpine
     container_name: rainz_go_grpc_graphql_account
@@ -9,6 +25,9 @@ services:
       - go_build_cache:/root/.cache/go-build
     environment:
       ACCOUNT_DATABASE_URL: postgres://rainz_account_user:rainz_account_password@account_db:5432/rainz_go_grpc_graphql_account?sslmode=disable
+      ACCOUNT_GRPC_PORT: "8081"
+    ports:
+      - "58081:8081"
     depends_on:
       account_db:
         condition: service_healthy
@@ -26,6 +45,7 @@ services:
       - "55432:5432"
     volumes:
       - rainz_go_grpc_graphql_account_db_data:/var/lib/postgresql/data
+      - ./account/db/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U rainz_account_user -d rainz_go_grpc_graphql_account"]
       interval: 5s
