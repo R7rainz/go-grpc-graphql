@@ -45,7 +45,10 @@ func (s *accountService) GetAccount(ctx context.Context, id string) (*domain.Acc
 }
 
 func (s *accountService) GetAccounts(ctx context.Context, skip int, take int) ([]domain.Account, error) {
-	if take > 100 || (skip == 0 && take == 0) {
+	if skip < 0 {
+		skip = 0
+	}
+	if take <= 0 || take > 100 {
 		take = 100
 	}
 	return s.repository.ListAccounts(ctx, skip, take)

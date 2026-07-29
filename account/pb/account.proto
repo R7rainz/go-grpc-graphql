@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package account.v1;
+
+option go_package = "github.com/r7rainz/go-grpc-graphql/account/pb;pb";
+
+message Account {
+  string id = 1;
+  string name = 2;
+}
+
+message PostAccountRequest {
+  string name = 1;
+}
+
+message PostAccountResponse {
+  Account account = 1;
+}
+
+message GetAccountRequest {
+  string id = 1;
+}
+
+message GetAccountResponse {
+  Account account = 1;
+}
+
+message GetAccountsRequest {
+  int32 skip = 1;
+  int32 take = 2;
+}
+
+message GetAccountsResponse {
+  repeated Account accounts = 1;
+}
+
+service AccountService {
+  rpc PostAccount(PostAccountRequest) returns (PostAccountResponse);
+  rpc GetAccount(GetAccountRequest) returns (GetAccountResponse);
+  rpc GetAccounts(GetAccountsRequest) returns (GetAccountsResponse);
+}
