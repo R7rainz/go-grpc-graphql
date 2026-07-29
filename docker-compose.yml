@@ -1,8 +1,38 @@
 services:
   account:
-  catalog:
-  order:
-  graphql:
+    image: golang:1.26-alpine
+    container_name: rainz_go_grpc_graphql_account
+    working_dir: /app
+    volumes:
+      - .:/app
+      - go_mod_cache:/go/pkg/mod
+      - go_build_cache:/root/.cache/go-build
+    environment:
+      ACCOUNT_DATABASE_URL: postgres://rainz_account_user:rainz_account_password@account_db:5432/rainz_go_grpc_graphql_account?sslmode=disable
+    depends_on:
+      account_db:
+        condition: service_healthy
+    command: ["go", "run", "./account/cmd/account"]
+
   account_db:
-  catalog_db:
-  order_no:
+    image: postgres:16-alpine
+    container_name: rainz_go_grpc_graphql_account_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: rainz_go_grpc_graphql_account
+      POSTGRES_USER: rainz_account_user
+      POSTGRES_PASSWORD: rainz_account_password
+    ports:
+      - "55432:5432"
+    volumes:
+      - rainz_go_grpc_graphql_account_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rainz_account_user -d rainz_go_grpc_graphql_account"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  go_mod_cache:
+  go_build_cache:
+  rainz_go_grpc_graphql_account_db_data:
