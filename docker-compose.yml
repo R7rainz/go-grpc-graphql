@@ -12,7 +12,7 @@ services:
     depends_on:
       account_db:
         condition: service_healthy
-    command: ["go", "run", "./account/cmd/account"]
+    command: ["go", "run", "./account/cmd/server"]
 
   account_db:
     image: postgres:16-alpine

@@ -4,7 +4,8 @@ import (
 	"log"
 
 	"github.com/kelseyhightower/envconfig"
-	"github.com/r7rainz/go-grpc-graphql/account"
+	"github.com/r7rainz/go-grpc-graphql/account/internal/repository"
+	"github.com/r7rainz/go-grpc-graphql/account/internal/service"
 )
 
 type AppConfig struct {
@@ -17,14 +18,14 @@ func main() {
 		log.Fatal(err)
 	}
 
-	repository, err := account.NewPostgresRepository(cfg.DatabaseURL)
+	repo, err := repository.NewPostgresRepository(cfg.DatabaseURL)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer repository.Close()
+	defer repo.Close()
 
-	service := account.NewService(repository)
-	_ = service
+	accountService := service.NewService(repo)
+	_ = accountService
 
 	log.Println("account service connected to database")
 }
