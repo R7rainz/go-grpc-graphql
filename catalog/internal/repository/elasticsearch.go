@@ -16,10 +16,11 @@ type elasticRepository struct {
 	client *elastic.Client
 }
 
+// ID is not stored in the document body; Elasticsearch keeps it as the doc _id
+// and every read path recovers it from there.
 type productDocument struct {
-	ID          string `json:"id"`
 	Name        string `json:"name"`
-	Description string `json:"desciption"`
+	Description string `json:"description"`
 	Price       string `json:"price"`
 }
 
@@ -64,7 +65,7 @@ func (r *elasticRepository) GetProductByID(ctx context.Context, id string) (*dom
 	return &domain.Product{
 		ID:          id,
 		Name:        p.Name,
-		Description: p.Price,
+		Description: p.Description,
 		Price:       p.Price,
 	}, nil
 }
