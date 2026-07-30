@@ -19,6 +19,7 @@ type Account struct {
 }
 
 func NewClient(target string) (*Client, error) {
+	//right now for the development purpose I am not using any encryption like tls ssl so insecure.NewCredentials is what I am using for now
 	conn, err := grpc.NewClient(target, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, err
