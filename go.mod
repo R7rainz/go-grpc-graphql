@@ -17,6 +17,10 @@ require (
 	github.com/coder/websocket v1.8.15 // indirect
 	github.com/go-viper/mapstructure/v2 v2.5.0 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
+	github.com/josharian/intern v1.0.0 // indirect
+	github.com/mailru/easyjson v0.9.2 // indirect
+	github.com/olivere/elastic v6.2.37+incompatible // indirect
+	github.com/pkg/errors v0.9.1 // indirect
 	github.com/sosodev/duration v1.4.0 // indirect
 	golang.org/x/net v0.57.0 // indirect
 	golang.org/x/sync v0.22.0 // indirect
