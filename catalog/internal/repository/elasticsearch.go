@@ -12,15 +12,6 @@ import (
 
 var ErrNotFound = errors.New("Entity not found")
 
-type Repository interface {
-	Close()
-	PutProduct(ctx context.Context, p domain.Product) error
-	GetProductByID(ctx context.Context, id string) (*domain.Product, error)
-	ListProducts(ctx context.Context, skip int, take int) ([]domain.Product, error)
-	ListProductWithIDs(ctx context.Context, ids []string) ([]domain.Product, error)
-	SearchProducts(ctx context.Context, query string, skip int, take int) ([]domain.Product, error)
-}
-
 type elasticRepository struct {
 	client *elastic.Client
 }
@@ -32,7 +23,7 @@ type productDocument struct {
 	Price       string `json:"price"`
 }
 
-func NewElasticRepository(URL string) (Repository, error) {
+func NewElasticRepository(URL string) (*elasticRepository, error) {
 	client, err := elastic.NewClient(
 		elastic.SetURL(URL),
 		elastic.SetSniff(false),
@@ -47,7 +38,6 @@ func NewElasticRepository(URL string) (Repository, error) {
 }
 
 func (r *elasticRepository) Close() {
-
 }
 
 func (r *elasticRepository) PutProduct(ctx context.Context, p domain.Product) error {
@@ -60,7 +50,6 @@ func (r *elasticRepository) PutProduct(ctx context.Context, p domain.Product) er
 
 func (r *elasticRepository) GetProductByID(ctx context.Context, id string) (*domain.Product, error) {
 	res, err := r.client.Get().Index("catalog").Type("product").Id(id).Do(ctx)
-
 	if err != nil {
 		return nil, err
 	}
@@ -82,13 +71,12 @@ func (r *elasticRepository) GetProductByID(ctx context.Context, id string) (*dom
 
 func (r *elasticRepository) ListProducts(ctx context.Context, skip int, take int) ([]domain.Product, error) {
 	res, err := r.client.Search().Index("catalog").Type("product").Query(elastic.NewMatchAllQuery()).From(int(skip)).Size(int(take)).Do(ctx)
-
 	if err != nil {
 		log.Println(err)
 		return nil, err
 	}
 
-	//hits are all the  values matched
+	// hits are all the  values matched
 	products := []domain.Product{}
 	for _, hit := range res.Hits.Hits {
 		p := productDocument{}
@@ -124,6 +112,30 @@ func (r *elasticRepository) ListProductsWithIDs(ctx context.Context, ids []strin
 
 		products = append(products, domain.Product{
 			ID:          doc.Id,
+			Name:        p.Name,
+			Description: p.Description,
+			Price:       p.Price,
+		})
+	}
+	return products, err
+}
+
+func (r *elasticRepository) SearchProducts(ctx context.Context, query string, skip int, take int) ([]domain.Product, error) {
+	res, err := r.client.Search().Index("catalog").Type("product").Query(elastic.NewMultiMatchQuery(query, "name", "description")).From(skip).Size(take).Do(ctx)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	products := []domain.Product{}
+	for _, hit := range res.Hits.Hits {
+		p := productDocument{}
+		if err := json.Unmarshal(*hit.Source, &p); err != nil {
+			return nil, err
+		}
+
+		products = append(products, domain.Product{
+			ID:          hit.Id,
 			Name:        p.Name,
 			Description: p.Description,
 			Price:       p.Price,
