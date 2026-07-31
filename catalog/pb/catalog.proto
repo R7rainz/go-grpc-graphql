@@ -1,0 +1,49 @@
+syntax = "proto3";
+
+package catalog.v1;
+
+option go_package = "github.com/r7rainz/go-grpc-graphql/catalog/pb;pb";
+
+message Product {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  double price = 4;
+}
+
+message PostProductRequest {
+  string name = 1;
+  string description = 2;
+  double price = 3;
+}
+
+message PostProductResponse {
+  Product product = 1;
+}
+
+message GetProductRequest {
+  string id = 1;
+}
+
+message GetProductResponse {
+  Product product = 1;
+}
+
+// GetProducts covers three cases: list (skip/take), fetch by ids, and search
+// (query). Whichever field is set decides which one the server runs.
+message GetProductsRequest {
+  int32 skip = 1;
+  int32 take = 2;
+  repeated string ids = 3;
+  string query = 4;
+}
+
+message GetProductsResponse {
+  repeated Product products = 1;
+}
+
+service CatalogService {
+  rpc PostProduct(PostProductRequest) returns (PostProductResponse);
+  rpc GetProduct(GetProductRequest) returns (GetProductResponse);
+  rpc GetProducts(GetProductsRequest) returns (GetProductsResponse);
+}
